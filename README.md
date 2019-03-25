@@ -55,17 +55,24 @@ npm test
 should return something that looks like:
 
 ```
-> trayiochallenge@1.0.0 test /Users/grantmerrill/Documents/JobApps/2018CoverLetters/TrayIO
+> trayiochallenge@1.0.0 test
 > mocha
 
 
 
-  Array
-    #indexOf()
-      ✓ should return -1 when the value is not present
+  dontExceedRoomBoundaries
+    upperBound
+      ✓ should return the upperBound if coordinate is greater than boundary
+    LowerBound
+      ✓ should return the lowerBound if coordinate is greater than boundary
+    withinBounds
+      ✓ should return the vale if coordinate is vithin boundaries
+
+  wasSpotCleaned
+    ✓ should return 1 if a spot was present in the spot list
 
 
-  1 passing (7ms)
+  4 passing (7ms)
 
 
 ```
