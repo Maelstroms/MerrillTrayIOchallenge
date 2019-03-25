@@ -39,8 +39,7 @@ and the program should output
 ```
 [ 1, 3 ]
 2
-Server at : <your ip address>
-listening on 3000
+
 ```
 
 ## Running the tests
