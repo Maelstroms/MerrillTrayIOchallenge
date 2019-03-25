@@ -17,7 +17,7 @@ describe('dontExceedRoomBoundaries', function (){
     });
   });
   describe('withinBounds', function  () {
-    it('should return the vale if coordinate is vithin boundaries', function(){
+    it('should return the coordinate if coordinate is vithin boundaries', function(){
       assert.equal(helperMethods.dontExceedRoomBoundaries(3,'x',5,5),3);
       assert.equal(helperMethods.dontExceedRoomBoundaries(3,'y',5,5),3);
     });
