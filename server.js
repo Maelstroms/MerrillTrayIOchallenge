@@ -119,7 +119,7 @@ function robotTravel(start, moves){
     // console.log(mov);
     currentPos = CardinalToCartisian[mov](currentPos);
     spotsCleaned = spotsCleaned + helperMethods.wasSpotCleaned(currentPos, dirtPatches);
-    console.log(dirtPatches);
+    // console.log(dirtPatches);
     // console.log(currentPos);
     // console.log(spotsCleaned);
   }
