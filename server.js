@@ -1,0 +1,192 @@
+
+
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const fs = require('fs');
+
+const bodyParser = require('body-parser');
+const ip = require('ip');
+const cors = require('cors');
+const helmet = require('helmet');
+const PORT = 3000;
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+
+//CORS
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  next();
+});
+app.use(helmet());
+
+// The goal of the program is to take the room dimensions, the locations of the dirt patches, the hoover location and the driving instructions as input and to then output the following:
+
+// The final hoover position (X, Y)
+// The number of patches of dirt the robot cleaned up
+var maxX = 0;
+var maxY = 0;
+
+function dontExceedRoomBoundaries(coord, axis){
+  if(axis == 'x'){
+    if(coord > maxX){
+      return maxX;
+    }
+    else if(coord < 0){
+      return 0;
+    }
+    else{
+      return coord;
+    }
+  }
+  else{
+    if(coord > maxY){
+      return maxY;
+    }
+    else if(coord < 0){
+      return 0;
+    }
+    else{
+      return coord;
+    }
+  }
+}
+
+var hooverXY = [0,0];
+
+
+var dirtPatches = [];
+
+var hooverMoves = [];
+
+var CardinalToCartisian = {
+  'E': function (position){
+    var newPos = [dontExceedRoomBoundaries(position[0]+1, 'x'),position[1]];
+    return newPos;
+  },
+  'W': function (position){
+    var newPos = [dontExceedRoomBoundaries(position[0]-1, 'x'), position[1]];
+    return newPos;
+  },
+  'N': function (position){
+    var newPos = [position[0],dontExceedRoomBoundaries(position[1]+1, 'y')];
+    return newPos;
+  },
+  'S': function (position){
+    var newPos = [position[0],dontExceedRoomBoundaries(position[1]-1, 'y')];
+    return newPos;
+  },
+
+}
+
+//input
+//four pieces of information that will be processed differently
+//Size of room x by y
+//starting coordinates of hoover
+//coordinates where dirt is
+//net of movements that the robot will take
+
+//going to add an argument for ease of testing, running multiple files to test edge cases
+//think about having this function return the values instead of having global vars
+function loadInstructions(){
+  var contents =fs.readFileSync('input.txt', 'utf8');
+  // console.log(contents);
+  var information = contents.split(/\s/);
+  // console.log(information);
+
+  maxX = Number(information[0]);
+  maxY = Number(information[1]);
+  hooverXY[0] = Number(information[2]);
+  hooverXY[1] = Number(information[3]);
+
+  //go through input to properly sort dirt patches
+  var i = 4;
+  while(i < information.length){
+    if (information[i].search(/[a-zA-Z]/g) > -1) {
+      hooverMoves = information[i].split('');
+      break;
+    }
+    else if (i%2 == 0){
+      var tempDirtCoord = [Number(information[i])];
+    }
+    else{
+      tempDirtCoord.push(Number(information[i]));
+      dirtPatches.push(tempDirtCoord);
+    }
+    // console.log(dirtPatches);
+    i++;
+  }
+
+  // console.log(maxX);
+  // console.log(maxY);
+  // console.log(hooverXY);
+
+  // console.log(hooverMoves);
+
+}
+
+//output
+//final position of robot - goal #1, given a room size and set of instructions, where does the robot end up?
+function robotTravel(start, moves){
+  var spotsCleaned = 0;
+  var currentPos = start;
+  for (let mov of moves){
+    // console.log(mov);
+    currentPos = CardinalToCartisian[mov](currentPos);
+    spotsCleaned = spotsCleaned + wasSpotCleaned(currentPos);
+    // console.log(currentPos);
+    // console.log(spotsCleaned);
+  }
+  return [currentPos, spotsCleaned];
+}
+
+//number of spots cleaned
+function wasSpotCleaned(coord){
+  var patchIndex = dirtPatches.findIndex(function(element){
+    if(element[0] == coord[0] && element[1] == coord[1]){
+      return true;
+    }
+    else{
+      return false;
+    }
+  });
+  if(patchIndex > -1){
+    // console.log(patchIndex);
+    dirtPatches[patchIndex] = 0;
+    // console.log(dirtPatches);
+    return 1;
+  }
+  else{
+    return 0;
+  }
+}
+
+
+//catch program closure
+//handy to make sure any background processes don't run indefinitely
+process.on('SIGINT', function(){
+
+  process.exit();
+});
+
+//running robot instructions
+loadInstructions();
+// console.log(robotTravel(hooverXY, hooverMoves));
+var endvals = robotTravel(hooverXY, hooverMoves);
+console.log(endvals[0]);
+console.log(endvals[1]);
+
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + '/index.html');
+});
+
+
+//Start Server
+http.listen(PORT, '0.0.0.0', function(){
+  console.log('Server at : ' + ip.address());
+  console.log('listening on ' + PORT);
+});

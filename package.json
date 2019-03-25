@@ -1,0 +1,24 @@
+{
+  "name": "trayiochallenge",
+  "version": "1.0.0",
+  "description": "challenege for tray io interview",
+  "main": "server.js",
+  "scripts": {
+    "test": "test"
+  },
+  "scripts": {
+  "test": "mocha"
+  },
+  "author": "Grant Merrill",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "helmet": "^3.16.0",
+    "http": "0.0.0",
+    "ip": "^1.1.5"
+  },
+  "devDependencies": {
+    "mocha": "^6.0.2"
+  }
+}
