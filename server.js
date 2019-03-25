@@ -11,6 +11,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const PORT = 3000;
 
+// import modules in module folder
+var helperMethods = require('./modules/helperMethods.js')
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -31,31 +34,6 @@ app.use(helmet());
 var maxX = 0;
 var maxY = 0;
 
-function dontExceedRoomBoundaries(coord, axis){
-  if(axis == 'x'){
-    if(coord > maxX){
-      return maxX;
-    }
-    else if(coord < 0){
-      return 0;
-    }
-    else{
-      return coord;
-    }
-  }
-  else{
-    if(coord > maxY){
-      return maxY;
-    }
-    else if(coord < 0){
-      return 0;
-    }
-    else{
-      return coord;
-    }
-  }
-}
-
 var hooverXY = [0,0];
 
 
@@ -63,21 +41,24 @@ var dirtPatches = [];
 
 var hooverMoves = [];
 
+// object to enumerate hoover moves
+// E and W change X coordinate
+// N and S change Y coordinate
 var CardinalToCartisian = {
   'E': function (position){
-    var newPos = [dontExceedRoomBoundaries(position[0]+1, 'x'),position[1]];
+    var newPos = [helperMethods.dontExceedRoomBoundaries(position[0]+1, 'x',maxX,maxY),position[1]];
     return newPos;
   },
   'W': function (position){
-    var newPos = [dontExceedRoomBoundaries(position[0]-1, 'x'), position[1]];
+    var newPos = [helperMethods.dontExceedRoomBoundaries(position[0]-1, 'x',maxX,maxY), position[1]];
     return newPos;
   },
   'N': function (position){
-    var newPos = [position[0],dontExceedRoomBoundaries(position[1]+1, 'y')];
+    var newPos = [position[0],helperMethods.dontExceedRoomBoundaries(position[1]+1, 'y',maxX,maxY)];
     return newPos;
   },
   'S': function (position){
-    var newPos = [position[0],dontExceedRoomBoundaries(position[1]-1, 'y')];
+    var newPos = [position[0],helperMethods.dontExceedRoomBoundaries(position[1]-1, 'y',maxX,maxY)];
     return newPos;
   },
 
@@ -90,10 +71,10 @@ var CardinalToCartisian = {
 //coordinates where dirt is
 //net of movements that the robot will take
 
-//going to add an argument for ease of testing, running multiple files to test edge cases
+
 //think about having this function return the values instead of having global vars
-function loadInstructions(){
-  var contents =fs.readFileSync('input.txt', 'utf8');
+function loadInstructions(fileName){
+  var contents =fs.readFileSync(fileName, 'utf8');
   // console.log(contents);
   var information = contents.split(/\s/);
   // console.log(information);
@@ -137,33 +118,15 @@ function robotTravel(start, moves){
   for (let mov of moves){
     // console.log(mov);
     currentPos = CardinalToCartisian[mov](currentPos);
-    spotsCleaned = spotsCleaned + wasSpotCleaned(currentPos);
+    spotsCleaned = spotsCleaned + helperMethods.wasSpotCleaned(currentPos, dirtPatches);
+    console.log(dirtPatches);
     // console.log(currentPos);
     // console.log(spotsCleaned);
   }
   return [currentPos, spotsCleaned];
 }
 
-//number of spots cleaned
-function wasSpotCleaned(coord){
-  var patchIndex = dirtPatches.findIndex(function(element){
-    if(element[0] == coord[0] && element[1] == coord[1]){
-      return true;
-    }
-    else{
-      return false;
-    }
-  });
-  if(patchIndex > -1){
-    // console.log(patchIndex);
-    dirtPatches[patchIndex] = 0;
-    // console.log(dirtPatches);
-    return 1;
-  }
-  else{
-    return 0;
-  }
-}
+
 
 
 //catch program closure
@@ -173,20 +136,26 @@ process.on('SIGINT', function(){
   process.exit();
 });
 
+
+// executable code
 //running robot instructions
-loadInstructions();
+loadInstructions('input.txt');
 // console.log(robotTravel(hooverXY, hooverMoves));
 var endvals = robotTravel(hooverXY, hooverMoves);
 console.log(endvals[0]);
 console.log(endvals[1]);
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + '/index.html');
-});
 
 
-//Start Server
-http.listen(PORT, '0.0.0.0', function(){
-  console.log('Server at : ' + ip.address());
-  console.log('listening on ' + PORT);
-});
+// boilerplate for web interface
+// leaving for potential for future expansion
+// app.get("/", function (req, res) {
+//   res.sendFile(__dirname + '/index.html');
+// });
+
+
+// //Start Server
+// http.listen(PORT, '0.0.0.0', function(){
+//   console.log('Server at : ' + ip.address());
+//   console.log('listening on ' + PORT);
+// });

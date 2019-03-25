@@ -4,10 +4,7 @@
   "description": "challenege for tray io interview",
   "main": "server.js",
   "scripts": {
-    "test": "test"
-  },
-  "scripts": {
-  "test": "mocha"
+    "test": "mocha"
   },
   "author": "Grant Merrill",
   "license": "ISC",
